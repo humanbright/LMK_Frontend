@@ -1,10 +1,8 @@
 /* eslint-disable no-unused-vars */
-import socketIO from "socket.io-client";
-import { useEffect } from "react";
-import { DATATYPE_LASTTRADE } from "../../engine/consts";
-import { useWebSocket } from "../../contexts/WebSocketContext";
 
 var latestBar;
+const DATATYPE_LASTTRADE = parseInt("0xFF02", 16);
+
 const resNames = {
   // minutes
   1: "1min",
@@ -140,71 +138,7 @@ const INTERVAL_SECONDS = {
 };
 
 const channelToSubscription = new Map();
-// const socket = socketIO.connect(process.env.API_URL);
-// socket.on("connect", () => {
-//   console.log("[socket] Connected");
-// });
 
-// socket.on("disconnect", (reason) => {
-//   console.log("[socket] Disconnected:", reason);
-// });
-
-// socket.on("error", (error) => {
-//   console.log("[socket] Error:", error);
-// });
-
-// socket.on("m", (data) => {
-//   console.log("[socket] Message:", data);
-//   const [
-//     eventTypeStr,
-//     exchange,
-//     fromSymbol,
-//     toSymbol,
-//     ,
-//     ,
-//     tradeTimeStr,
-//     ,
-//     tradePriceStr,
-//   ] = data.split("~");
-
-//   if (parseInt(eventTypeStr) !== 0) {
-//     // Skip all non-trading events
-//     return;
-//   }
-//   const tradePrice = parseFloat(tradePriceStr);
-//   const tradeTime = parseInt(tradeTimeStr);
-//   const channelString = `0~${exchange}~${fromSymbol}~${toSymbol}`;
-//   const subscriptionItem = channelToSubscription.get(channelString);
-//   if (subscriptionItem === undefined) {
-//     return;
-//   }
-//   const lastDailyBar = subscriptionItem.lastDailyBar;
-//   const nextDailyBarTime = getNextDailyBarTime(lastDailyBar.time);
-
-//   let bar;
-//   if (tradeTime >= nextDailyBarTime) {
-//     bar = {
-//       time: nextDailyBarTime,
-//       open: tradePrice,
-//       high: tradePrice,
-//       low: tradePrice,
-//       close: tradePrice,
-//     };
-//     console.log("[socket] Generate new bar", bar);
-//   } else {
-//     bar = {
-//       ...lastDailyBar,
-//       high: Math.max(lastDailyBar.high, tradePrice),
-//       low: Math.min(lastDailyBar.low, tradePrice),
-//       close: tradePrice,
-//     };
-//     console.log("[socket] Update the latest bar by price", tradePrice);
-//   }
-//   subscriptionItem.lastDailyBar = bar;
-
-//   // Send data to every subscriber of that symbol
-//   subscriptionItem.handlers.forEach((handler) => handler.callback(bar));
-// });
 function getNextDailyBarTime(barTime) {
   const date = new Date(barTime * 1000);
   date.setDate(date.getDate() + 1);
@@ -212,7 +146,6 @@ function getNextDailyBarTime(barTime) {
 }
 
 // Chart Methods
-// eslint-disable-next-line import/no-anonymous-default-export
 const datafeed = (tokenId) => {
   let websocket = null;
 
@@ -314,8 +247,6 @@ const datafeed = (tokenId) => {
       lastDailyBar
     ) => {
       const parsedSymbol = parseFullSymbol(symbolInfo.full_name);
-      // console.log ("symbolInfo.full_name === ", symbolInfo.full_name, ", parsedSymbol = ", parsedSymbol)
-      // const channelString = `0~${parsedSymbol.exchange}~${parsedSymbol.fromSymbol}~${parsedSymbol.toSymbol}`;
       const channelString = `0~${parsedSymbol.exchange}~${parsedSymbol.symbol}`;
       const handler = {
         id: subscribeUID,
@@ -333,17 +264,10 @@ const datafeed = (tokenId) => {
         lastDailyBar: lastDailyBar || latestBar,
         handlers: [handler],
       };
-      channelToSubscription.set(channelString, subscriptionItem);
-      // console.log(
-      //   "[subscribeBars]: Subscribe to streaming. Channel:",
-      //   channelString
-      // );
-      // const {socket} = useWebSocket();
-      // if (!socket) { console.log("Socket is not yet initialized");}
-      // console.log("socket ::: ", socket)
-      // socket.emit("SubAdd", { subs: channelString });
 
+      channelToSubscription.set(channelString, subscriptionItem);
       websocket = new WebSocket(import.meta.env.VITE_PUBLIC_SOCKET_URL);
+
       websocket.onopen = () => {
         // console.log("socket connected");
       }
@@ -356,7 +280,6 @@ const datafeed = (tokenId) => {
           const data = JSON.parse(atob(event.data)).message;
           // console.log("websocket data: ", data, ", DATATYPE_LASTTRADE :: ", DATATYPE_LASTTRADE)
           if (data.type === DATATYPE_LASTTRADE) {
-            // console.log("DATATYPE_LASTTRADE ", DATATYPE_LASTTRADE)
             if (data.data.mintAddr !== tokenId) return;
 
             const {
@@ -366,22 +289,14 @@ const datafeed = (tokenId) => {
               timestamp,
             } = data.data;
             const channelString = `0~${exchange}~${ticker}`;
-            // console.log("channelString: ", channelString)
             const subscriptionItem = channelToSubscription.get(channelString);
-            // console.log("subscriptionItem: ", subscriptionItem)
             if (subscriptionItem === undefined) {
               return;
             }
             const lastDailyBar = subscriptionItem.lastDailyBar;
-            // console.log("lastDailyBar = ", lastDailyBar, ", subscriptionItem = ", subscriptionItem)
             const resValInMin = resValues[subscriptionItem.resolution];
             const resPeriod = resValInMin * 60 * 1000;
-            // const nextIntervalTime = parseInt(lastDailyBar.time / resPeriod + 1) * resPeriod;
             const nextIntervalTime = lastDailyBar.time + resPeriod;
-            // console.log("timestamp: ", timestamp)
-            // console.log("nextIntervalTime: ", nextIntervalTime)
-            // console.log("lastDailyBar: ", lastDailyBar)
-            // console.log("price: ", price)
             let bar;
             if (timestamp >= nextIntervalTime) {
               bar = {

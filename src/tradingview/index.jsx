@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useMedia } from 'react-use'
 import Datafeed from './datafeed';
-// import { DATATYPE_LASTTRADE } from "../../engine/consts";
 
 const timeFrames = [
   { text: "6m", resolution: "120" },
@@ -96,24 +95,6 @@ const Chart = (props) => {
 
   useEffect(() => {
     setWindowDimensions(getWindowDimensions())
-    // const websocket = new WebSocket(import.meta.env.VITE_PUBLIC_SOCKET_URL);
-    // websocket.onopen = () => {
-    //   console.log("websocket opened! ----- ");
-    //   setDataFeed(Datafeed(tokenId))
-    // };
-
-    // websocket.onmessage = (event) => {
-    //   console.log("websocket onmessage!");
-    //   const data = JSON.parse(atob(event.data)).message;
-
-    //   if (data.type === DATATYPE_LASTTRADE) {
-    //     console.log("websocket receive -----  22222 ----- ", data)
-    //     if (data.data.mintAddr === tokenId) {
-    //       console.log("websocket receive -----  3333 ----- ")
-    //       setDataFeed(Datafeed(tokenId))
-    //     }
-    //   }
-    // };
   }, [])
 
   useEffect(() => {
