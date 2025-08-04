@@ -83,7 +83,7 @@ function getWindowDimensions() {
 }
 
 const Chart = (props) => {
-  const { symbol, tokenId, interval, width, height } = props;
+  const { symbol, interval, width, height } = props;
   const [windowDimensions, setWindowDimensions] = useState(null);
   const offset = (-1 * new Date().getTimezoneOffset()) / 60;
   const below600 = useMedia('(max-width: 640px)')
@@ -117,7 +117,7 @@ const Chart = (props) => {
         width: "100%",
         height: "100%",
         container: 'tv_chart_container',
-        datafeed: Datafeed(tokenId),
+        datafeed: Datafeed(),
         library_path: '/charting_library/',
         toolbar_bg: '#0b1217',
         overrides: {

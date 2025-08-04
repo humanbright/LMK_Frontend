@@ -146,7 +146,7 @@ function getNextDailyBarTime(barTime) {
 }
 
 // Chart Methods
-const datafeed = (tokenId) => {
+const datafeed = () => {
   let websocket = null;
 
   return {
@@ -198,23 +198,28 @@ const datafeed = (tokenId) => {
         to = now;
       }
       try {
-        // let url = `https://api.twelvedata.com/time_series?symbol=${symbolInfo.name}&outputsize=1000&interval=${resName}&apikey=${API_KEY}`;
-        // console.log("from === ", from, ", to === ", to)
-        let url = `${import.meta.env.VITE_PUBLIC_BACKEND_URL}/token/get_feed_data?tokenId=${tokenId}&from=${from}&to=${to}&interval=${resVal}`;
+        let url = `${import.meta.env.VITE_PUBLIC_BACKEND_URL}/get_feed_data?from=${from}&to=${to}&interval=${resVal}`;
 
         const response = await fetch(url);
+
+        console.log("response", response);
         if (response.status !== 200) {
           onHistoryCallback([], { noData: false });
           return;
         }
-        const data = await response.json();
+
+        const dataRes = await response.json();
+        const data = dataRes.data;
+        console.log("data", data);
 
         if (!data.length) {
           onHistoryCallback([], { noData: true });
         }
 
+        console.log("data", data);
+
         let bars = data.map((el) => {
-          let dd = new Date(el.startTimestampSeconds * 1000);
+          let dd = new Date(el.time * 1000);
           return {
             time: dd.getTime(), //TradingView requires bar time in ms
             low: el.low,
